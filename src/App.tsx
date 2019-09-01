@@ -1,26 +1,27 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import parseMs from 'parse-ms';
+import { useCountdown } from './Hooks/Timer';
+
+const Timer = () => {
+  const t = useCountdown({ nextDate: 1567366340625, intervalTime: 1000 });
+
+  return <div>{t}</div>;
+};
 
 const App: React.FC = () => {
+  const [hide, setHide] = useState(false);
+
+  const r = hide ? <Timer /> : null;
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+      <header style={{ width: 400, margin: '0 auto' }} className="App-header">
+        {r}
+
+        <button onClick={() => setHide(h => !h)}>Show hide</button>
       </header>
     </div>
   );
-}
+};
 
 export default App;
