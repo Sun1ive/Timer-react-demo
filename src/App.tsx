@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import parseMs from 'parse-ms';
-import { useCountdown } from './Hooks/Timer';
+import { useTimer } from './Hooks/Timer';
 
 const Timer = () => {
-  const t = useCountdown({ nextDate: 1567366340625, intervalTime: 1000 });
+  const t = useTimer({ nextDate: 1567450344262, intervalTime: 1000 });
 
-  return <div>{t}</div>;
+  return (
+    <div>
+      direction {t.direction} <br />
+      MINUTES {parseMs(t.timeLeft).minutes} <br />
+      SECONDS {parseMs(t.timeLeft).seconds}
+    </div>
+  );
 };
 
 const App: React.FC = () => {

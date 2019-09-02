@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { clearInterval, setInterval } from 'timers';
+import { useEffect, useState, useCallback } from 'react';
+import { setTimeout, clearTimeout } from 'timers';
 
 export interface ITimerProps {
   nextDate: number;
@@ -10,64 +10,68 @@ export type Direction = 'forward' | 'backward';
 
 export interface IState {
   direction: Direction;
+  timeLeft: number;
 }
 
 let interval: NodeJS.Timer | undefined;
 
-export const useCountdown = ({
+export const useTimer = ({
   nextDate: date,
   intervalTime = 1000
 }: ITimerProps) => {
-  const [timeLeft, setTimeLeft] = useState(() => {
-    const initial = date - Date.now();
+  const initial = date - Date.now();
 
+  const [state, setState] = useState<IState>(() => {
+    console.log({ initial });
     if (initial >= 0) {
-      return initial;
+      return {
+        direction: 'backward',
+        timeLeft: initial
+      };
     } else {
-      return 0;
+      return {
+        direction: 'forward',
+        timeLeft: Math.abs(initial)
+      };
     }
   });
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft(current => {
-        const diff = date - Date.now();
-
-        if (current <= 0 || diff <= 0) {
-          clearInterval(interval);
-
-          return 0;
-        }
-
-        return diff;
-      });
-    }, intervalTime);
-
-    return () => clearInterval(interval);
-  }, [date, intervalTime]);
-
-  useEffect(() => {
-    console.log(timeLeft);
-
-    if (timeLeft === 0) {
-      console.log('DONE');
-
-      interval = setInterval(() => {
-        setTimeLeft(() => {
-          return Date.now() - date;
-        });
-      }, intervalTime);
-    }
-  }, [timeLeft, intervalTime, date]);
-
-  useEffect(() => {
     return () => {
-      if (interval) {
-        console.log('123');
-        clearInterval(interval);
+      if (typeof interval !== 'undefined') {
+        clearTimeout(interval);
       }
     };
   }, []);
 
-  return timeLeft;
+  useEffect(() => {
+    if (state.direction === 'forward') {
+      interval = setTimeout(() => {
+        console.log('forward', state);
+        setState(prev => ({
+          ...prev,
+          timeLeft: Date.now() - date
+        }));
+      }, intervalTime);
+    } else {
+      interval = setTimeout(() => {
+        setState(prev => {
+          console.log('backward', prev);
+          if (date - Date.now() <= 0) {
+            return {
+              timeLeft: Date.now() - date,
+              direction: 'forward'
+            };
+          }
+
+          return {
+            ...prev,
+            timeLeft: date - Date.now()
+          };
+        });
+      }, intervalTime);
+    }
+  }, [state, date, intervalTime]);
+
+  return state;
 };
